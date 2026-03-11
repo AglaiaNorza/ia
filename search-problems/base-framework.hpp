@@ -4,9 +4,7 @@ Potrebbe essere utile permettere all'utente (che definisce una sottoclasse di Pr
 */
 
 #include <string>
-#include <unordered_map>
 #include <vector>
-#include <algorithm>
 
 using namespace std;
 
@@ -108,40 +106,4 @@ public:
 
 };
 
-class Frontier {
-protected:
-    std::vector<Node*> nodes;
-    std::unordered_map<std::string, Node*> stateIndexMap;
 
-public:
-    virtual ~Frontier() = default;
-
-    bool is_empty() {
-        return nodes.empty();
-    }
-
-    virtual void add(Node* node) {
-        nodes.push_back(node);
-        stateIndexMap[node->get_state()->to_string()] = node;
-    }
-
-    // implemented by subclasses based on policy
-    virtual Node* dequeue() = 0;
-
-    bool contains(State* state) { return stateIndexMap.find(state->to_string()) != stateIndexMap.end(); }
-
-    virtual void remove(Node* node) {
-        if (node == nullptr) return;
-        
-        // remove from hashmap
-        stateIndexMap.erase(node->get_state()->to_string());
-        
-        // remove from frontier
-        nodes.erase(std::remove(nodes.begin(), nodes.end(), node), nodes.end());
-    }
-
-    // to implement in subclasses: finds node in frontier, sees if it's better according
-    // to the chosen measure, and, if so, removes the old one and adds the new one
-    virtual void replace_if_better(Node* new_node);
-
-};
