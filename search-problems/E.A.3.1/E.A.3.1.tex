@@ -1,0 +1,335 @@
+\documentclass{article}
+\usepackage{booktabs} 
+\setlength{\floatsep}{5pt}      
+\setlength{\textfloatsep}{10pt}
+\setlength{\intextsep}{5pt}   
+\usepackage{forest}
+\usepackage{float}
+
+% Definizione dello stile per gli alberi di ricerca
+\forestset{
+  explored/.style={draw=olive!80!black, thick, fill=yellow!20},
+  unexplored/.style={draw=gray, thick, fill=white}
+}
+
+\begin{document}
+\section*{Esplorazione Spazio degli Stati}
+
+% ---------------------------------------------------------
+% Tabella DFS
+% ---------------------------------------------------------
+\begin{table}[H]
+    \centering
+    \caption{ricerca in profondità (DFS)}
+    \begin{tabular}{clp{4cm}p{5cm}}
+        \toprule
+        \textbf{Passo} & \textbf{Nodo Espanso} & \textbf{Frontiera} & \textbf{Esplorati} \\
+        \midrule
+        1 & S  & $\emptyset$    & $\emptyset$ \\
+        2 & A  & [B, D]         & \{S\} \\
+        3 & B  & [D]            & \{A, S\} \\
+        4 & C  & [D, G1]        & \{B, A, S\} \\
+        5 & F  & [D, G1, J]     & \{B, C, A, S\} \\
+        6 & D  & [G1, J, G2]    & \{F, B, C, A, S\} \\
+        7 & E  & [G1, J, G2]    & \{F, B, D, C, A, S\} \\
+        8 & G2 & [G1, J]        & \{E, F, B, D, C, A, S\} \\
+        \bottomrule
+    \end{tabular}
+    
+    \vspace{0.2cm}
+    \textbf{Cammino:} S $\rightarrow$ A $\rightarrow$ B $\rightarrow$ C $\rightarrow$ F $\rightarrow$ D $\rightarrow$ E $\rightarrow$ G2 \quad \textbf{Costo:} 22
+
+\begin{center}
+\begin{forest}
+  for tree={circle, minimum size=1.5em, inner sep=2pt, s sep=4mm, l sep=5mm, unexplored}
+  [S, explored
+    [A, explored
+      [B, explored
+        [C, explored
+          [F, explored
+            [D, explored
+              [E, explored
+                [G2, explored]
+              ]
+            ]
+            [G2]
+          ]
+          [J]
+        ]
+        [G1]
+      ]
+    ]
+    [B]
+    [D]
+  ]
+\end{forest}
+\end{center}
+\end{table}
+\begin{itemize}
+    \item sono state necessarie 8 iterazioni (nodi espansi) per trovare l'obiettivo
+    \item il cammino trovato non è ottimo (22 $>$ 14).
+    \item la DFS non garantisce l'ottimalità, poiché esplora i rami in profondità senza considerare i costi dei passi
+\end{itemize}
+
+
+% ---------------------------------------------------------
+% Tabella BFS
+% ---------------------------------------------------------
+\begin{table}[H]
+    \centering
+    \caption{ricerca in ampiezza (BFS)}
+    \begin{tabular}{clp{4cm}p{5cm}}
+        \toprule
+        \textbf{Passo} & \textbf{Nodo Espanso} & \textbf{Frontiera} & \textbf{Esplorati} \\
+        \midrule
+        1 & S  & $\emptyset$    & $\emptyset$ \\
+        2 & A  & [B, D]         & \{S\} \\
+        3 & B  & [D]            & \{A, S\} \\
+        4 & D  & [C, G1]        & \{B, A, S\} \\
+        5 & C  & [G1, E]        & \{B, D, A, S\} \\
+        6 & E  & [G1, F, J]     & \{B, C, D, A, S\} \\
+        7 & G1 & [F, J, G2]     & \{E, B, C, D, A, S\} \\
+        \bottomrule
+    \end{tabular}
+    
+    \vspace{0.2cm}
+    \textbf{Cammino:} S $\rightarrow$ B $\rightarrow$ G1 \quad \textbf{Costo:} 16
+
+\begin{itemize}
+    \item sono state necessarie 7 iterazioni per trovare l'obiettivo    
+    \item il cammino trovato non è ottimo $16 > 14$
+    \item BFS garantisce l'ottimalità solo se i costi degli archi sono costanti (costo di cammino è funzione monotona della profondità)
+\end{itemize}
+
+\begin{center}
+\begin{forest}
+  for tree={circle, minimum size=1.5em, inner sep=2pt, s sep=4mm, l sep=5mm, unexplored}
+  [S, explored
+    [A, explored]
+    [B, explored
+      [C, explored]
+      [G1, explored]
+    ]
+    [D, explored
+      [E, explored]
+    ]
+  ]
+\end{forest}
+\end{center}
+\end{table}
+
+% ---------------------------------------------------------
+% Tabella UCS
+% ---------------------------------------------------------
+\begin{table}[H]
+    \centering
+    \caption{ricerca a costi uniformi (UCS)}
+    \begin{tabular}{clp{4cm}p{5cm}}
+        \toprule
+        \textbf{Passo} & \textbf{Nodo Espanso} & \textbf{Frontiera} & \textbf{Esplorati} \\
+        \midrule
+        1 & S  & $\emptyset$    & $\emptyset$ \\
+        2 & A  & [B, D]         & \{S\} \\
+        3 & D  & [B]            & \{A, S\} \\
+        4 & B  & [C, E]         & \{D, A, S\} \\
+        5 & C  & [E, G1]        & \{B, D, A, S\} \\
+        6 & E  & [G1, F, J]     & \{B, C, D, A, S\} \\
+        7 & F  & [G1, J, G2]    & \{E, B, C, D, A, S\} \\
+        8 & J  & [G1, G2]       & \{F, E, B, C, D, A, S\} \\
+        9 & G2 & [G1]           & \{J, F, E, B, C, D, A, S\} \\
+        \bottomrule
+    \end{tabular}
+    
+    \vspace{0.2cm}
+    \textbf{Cammino:} S $\rightarrow$ D $\rightarrow$ C $\rightarrow$ F $\rightarrow$ G2 \quad \textbf{Costo:} 14
+
+\begin{center}
+\begin{forest}
+  for tree={circle, minimum size=1.5em, inner sep=2pt, s sep=4mm, l sep=5mm, unexplored}
+  [S, explored
+    [A, explored
+      [B, explored
+        [G1]
+      ]
+    ]
+    [D, explored
+      [C, explored
+        [F, explored
+          [G2, explored]
+        ]
+        [J, explored]
+      ]
+      [E, explored]
+    ]
+  ]
+\end{forest}
+\end{center}
+\end{table}
+
+\begin{itemize}
+    \item sono state necessarie 9 iterazioni per trovare l'obiettivo
+    \item il cammino trovato è ottimo (costo 14)
+    \item UCS garantisce sempre l'ottimalità se i costi degli archi sono non negativi (e l'albero di ricerca è finito)
+\end{itemize}
+
+% ---------------------------------------------------------
+% Tabella IDS
+% ---------------------------------------------------------
+\begin{table}[H]
+    \centering
+    \caption{ricerca ad approfondimento iterativo (IDS)}
+    \begin{tabular}{cclp{3cm}p{4cm}}
+        \toprule
+        \textbf{Limite} & \textbf{Passo} & \textbf{Nodo Espanso} & \textbf{Frontiera} & \textbf{Esplorati} \\
+        \midrule
+        \textbf{0} & 1 & S  & $\emptyset$ & $\emptyset$ \\
+        \midrule
+        \textbf{1} & 1 & S  & $\emptyset$ & $\emptyset$ \\
+                   & 2 & A  & [B, D]      & \{S\} \\
+                   & 3 & B  & [D]         & \{A, S\} \\
+                   & 4 & D  & $\emptyset$ & \{B, A, S\} \\
+        \midrule
+        \textbf{2} & 1 & S  & $\emptyset$ & $\emptyset$ \\
+                   & 2 & A  & [B, D]      & \{S\} \\
+                   & 3 & B  & [D]         & \{A, S\} \\
+                   & 4 & D  & $\emptyset$ & \{B, A, S\} \\
+                   & 5 & C  & [E]         & \{B, D, A, S\} \\
+                   & 6 & E  & $\emptyset$ & \{B, C, D, A, S\} \\
+        \midrule
+        \textbf{3} & 1 & S  & $\emptyset$ & $\emptyset$ \\
+                   & 2 & A  & [B, D]      & \{S\} \\
+                   & 3 & B  & [D]         & \{A, S\} \\
+                   & 4 & C  & [D, G1]     & \{B, A, S\} \\
+                   & 5 & G1 & [D]         & \{B, C, A, S\} \\
+        \bottomrule
+    \end{tabular}
+    
+    \vspace{0.2cm}
+    \textbf{Cammino:} S $\rightarrow$ A $\rightarrow$ B $\rightarrow$ G1 \quad \textbf{Costo:} 15
+
+\begin{center}
+\begin{forest}
+  for tree={circle, minimum size=1.5em, inner sep=2pt, s sep=4mm, l sep=5mm, unexplored}
+  [S, explored
+    [A, explored
+      [B, explored
+        [C, explored]
+        [G1, explored]
+      ]
+    ]
+    [B]
+    [D, explored]
+  ]
+\end{forest}
+\end{center}
+
+\end{table}
+\begin{itemize}
+    \item  4 iterazioni di limite (da 0 a 3), 16 nodi espansi (1+4+6+5)
+    \item il cammino trovato non è ottimo (costo 15 contro 14)
+    \item come la BFS
+\end{itemize}
+
+
+% ---------------------------------------------------------
+% Tabella Greedy 
+% ---------------------------------------------------------
+\begin{table}[H]
+    \centering
+    \caption{ricerca best-first greedy}
+    \begin{tabular}{clp{4cm}p{5cm}}
+        \toprule
+        \textbf{Passo} & \textbf{Nodo Espanso} & \textbf{Frontiera} & \textbf{Esplorati} \\
+        \midrule
+        1 & S  & $\emptyset$ & $\emptyset$ \\
+        2 & B  & [A, D]      & \{S\} \\
+        3 & G1 & [A, D, C]   & \{B, S\} \\
+        \bottomrule
+    \end{tabular}
+    
+    \vspace{0.2cm}
+    \textbf{Cammino:} S $\rightarrow$ B $\rightarrow$ G1 \quad \textbf{Costo:} 16
+
+\begin{center}
+\begin{forest}
+  for tree={circle, minimum size=1.5em, inner sep=2pt, s sep=4mm, l sep=5mm, unexplored}
+  [S, explored
+    [A]
+    [B, explored
+      [C]
+      [G1, explored]
+    ]
+    [D]
+  ]
+\end{forest}
+\end{center}
+\end{table}
+\begin{itemize}
+    \item  3 iterazioni
+    \item  il cammino trovato non è ottimo $16 > 14$ 
+    \item  greedy non garantisce l'ottimalità, poiché si affida esclusivamente all'euristica ignorando il costo del cammino percorso
+\end{itemize}
+
+% ---------------------------------------------------------
+% Tabella A*
+% ---------------------------------------------------------
+
+\begin{table}[H]
+    \centering
+    \caption{ricerca A*}
+    \begin{tabular}{clp{4cm}p{5cm}}
+        \toprule
+        \textbf{Passo} & \textbf{Nodo Espanso} & \textbf{Frontiera} & \textbf{Esplorati} \\
+        \midrule
+        1 & S  & $\emptyset$       & $\emptyset$ \\
+        2 & D  & [A, B]            & \{S\} \\
+        3 & B  & [A, C, E]         & \{D, S\} \\
+        4 & C  & [A, E, G1]        & \{B, D, S\} \\
+        5 & A  & [E, G1, F, J]     & \{B, C, D, S\} \\
+        6 & E  & [G1, F, J]        & \{B, A, C, D, S\} \\
+        7 & F  & [G1, J, G2]       & \{E, B, A, C, D, S\} \\
+        8 & G2 & [G1, J]           & \{F, E, B, A, C, D, S\} \\
+        \bottomrule
+    \end{tabular}
+    
+    \vspace{0.2cm}
+    \textbf{Cammino:} S $\rightarrow$ D $\rightarrow$ C $\rightarrow$ F $\rightarrow$ G2 \quad \textbf{Costo:} 14
+
+
+\begin{center}
+\begin{forest}
+  for tree={circle, minimum size=1.5em, inner sep=2pt, s sep=4mm, l sep=5mm, unexplored}
+  [S, explored
+    [A, explored]
+    [B, explored
+      [G1]
+    ]
+    [D, explored
+      [C, explored
+        [F, explored
+          [G2, explored]
+        ]
+        [J]
+      ]
+      [E, explored]
+    ]
+  ]
+\end{forest}
+\end{center}
+\end{table}
+
+\begin{itemize}
+    \item sono state necessarie 8 iterazioni per trovare l'obiettivo
+    \item il cammino trovato è ottimo (14)
+    \item A* garantisce l'ottimalità se l'euristica è ammissibile (nella ricerca su alberi) o consistente (nella ricerca su grafi)
+\end{itemize}
+
+\subsection*{euristica}
+L'euristica è:
+\begin{itemize}
+    \item \textbf{ammissibile} - perché per ogni stato $s$ vale $h(s) \le$ costo minimo per raggiungere l'obiettivo
+    \item \textbf{non consistente} - perché $9 = h(A) > c(A, B) + h(B) = 4 + 3 = 7$
+\end{itemize}
+
+
+\end{document}
