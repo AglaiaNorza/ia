@@ -3,9 +3,9 @@
 #include <vector>
 #include <unordered_map>
 
-#include "../domain.hpp"
-#include "../search_core.hpp"
-#include "../search_algos.hpp"
+#include "../framework/domain.hpp"
+#include "../framework/search_core.hpp"
+#include "../framework/search_algos.hpp"
 
 class GraphState : public State {
 private:
