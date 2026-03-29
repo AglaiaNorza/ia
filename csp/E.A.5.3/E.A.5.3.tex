@@ -1,0 +1,207 @@
+\documentclass[12pt]{article}
+\usepackage{amsmath}
+
+\usepackage{xcolor}
+
+\usepackage{listings}
+\usepackage[most]{tcolorbox}
+
+% style stolen from haskell notes (non avrei ricreato appositamente altrimenti...)
+\definecolor{mzbg}{HTML}{F8F9FA}
+\definecolor{mzpurple}{HTML}{5E5086}
+\definecolor{mzgreen}{HTML}{118C4F}
+\definecolor{mzred}{HTML}{C0392B}
+\definecolor{mzblue}{HTML}{2E86C1} 
+\definecolor{mznumber}{HTML}{ADB5BD}
+\definecolor{mztitlebg}{HTML}{2C3E50}
+
+\lstdefinelanguage{MiniZinc}{
+    morekeywords={include, var, par, array, of, int, float, set, bool, constraint, solve, satisfy, minimize, maximize, forall, exists, where, if, then, else, endif},
+    morekeywords=[2]{alldifferent, abs, sum, count, min, max, card}, 
+    sensitive=true,
+    morecomment=[l]{\%},
+    morecomment=[s]{/*}{*/},
+    morestring=[b]",
+}
+
+\lstdefinestyle{mznstyle}{
+    language=MiniZinc,
+    commentstyle=\color{mzgreen}\itshape,
+    keywordstyle=\color{mzpurple}\bfseries,
+    keywordstyle=[2]\color{mzblue},
+    numberstyle=\tiny\color{mznumber},
+    stringstyle=\color{mzred},
+    basicstyle=\ttfamily\footnotesize,
+    breaklines=true,
+    showstringspaces=false,
+    tabsize=2,
+    numbers=none
+}
+
+\newtcblisting{mznbox}[1]{
+    enhanced,
+    skin=bicolor,
+    colback=mzbg,
+    colbacktitle=mztitlebg,
+    coltitle=white,
+    colframe=mztitlebg,
+    boxrule=0.5pt,
+    arc=4pt,
+    drop shadow=black!10!white,
+    fonttitle=\bfseries\sffamily,
+    title=#1,
+    listing only,
+    listing options={style=mznstyle, numbers=left, numbersep=10pt},
+    left=15pt,
+    top=4pt,
+    bottom=4pt,
+    breakable
+}
+
+\title{E.A.5.2 - CSP: edge colouring}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+\vspace{-5em}
+\section{Modellazione}
+
+Per evitare di creare due variabili per ogni arco (indiretto), impongo un ordinamento.
+
+\begin{itemize}
+    \item variabili: $X = \{ X_{a, b} \mid (a,b)\in E, \ a < b \}$
+    \item domini: $D_{X_{a,b}} = \{1, 2, 3\} \ \forall X_{a,b}\in X$
+    \item vincoli: 
+        \begin{align*}
+            C = &\{\neg\bigl( (X_{a,b} = X_{b,c}) \land (X_{b,c} = X_{a,c})\bigr) \\
+                &\mid a, b, c \in V \text{ s.t. } a < b < c, \ \land \  (a,b), (b,c), (a,c) \in E\} 
+        \end{align*}
+\end{itemize}
+
+\section{Istanziazione}
+
+\subsection{Variabili e domini}
+(Ordino i nodi alfabeticamente per rispettare la regola $a < b$ ed evitare duplicati)
+\begin{align*}
+X = \{ & X_{A,E}, X_{A,H}, X_{A,I}, X_{A,S}, \\
+& X_{B,C}, X_{B,G2}, X_{B,I}, X_{B,J}, X_{B,S}, \\
+& X_{C,D}, X_{C,G2}, X_{C,S}, \\
+& X_{D,E}, X_{D,S}, \\
+& X_{E,G1}, X_{E,H}, \\
+& X_{G1,H}, \\
+& X_{G2,J}, \\
+& X_{H,I} \}
+\end{align*}
+
+Tutte le variabili condividono lo stesso dominio di colori (1, 2 o 3).
+\[
+D_v = \{1, 2, 3\} \quad \forall v \in X
+\]
+
+\subsection{Vincoli}
+Ci sono 7 triangoli nel grafo:
+
+\begin{itemize}
+\item \textbf{\{A, E, H\}:}
+        \[ C_1: \neg ((X_{A,E} = X_{A,H}) \land (X_{A,H} = X_{E,H})) \]
+
+    \item \textbf{\{A, H, I\}:}
+        \[ C_2: \neg ((X_{A,H} = X_{A,I}) \land (X_{A,I} = X_{H,I})) \]
+
+    \item \textbf{\{B, C, G2\}:}
+        \[ C_3: \neg ((X_{B,C} = X_{B,G2}) \land (X_{B,G2} = X_{C,G2})) \]
+
+    \item \textbf{\{B, C, S\}:}
+        \[ C_4: \neg ((X_{B,C} = X_{B,S}) \land (X_{B,S} = X_{C,S})) \]
+
+    \item \textbf{\{B, G2, J\}:}
+        \[ C_5: \neg ((X_{B,G2} = X_{B,J}) \land (X_{B,J} = X_{G2,J})) \]
+
+    \item \textbf{\{C, D, S\}:}
+        \[ C_6: \neg ((X_{C,D} = X_{C,S}) \land (X_{C,S} = X_{D,S})) \]
+
+    \item \textbf{\{E, G1, H\}:}
+        \[ C_7: \neg ((X_{E,G1} = X_{E,H}) \land (X_{E,H} = X_{G1,H})) \]
+    \item \textbf{insieme finale:}
+        \[
+            C = \{ C_1, C_2, C_3, C_4, C_5, C_6, C_7 \}
+        \]
+
+\end{itemize}
+
+\section{Codifica in MiniZinc}
+
+\subsection{v.1: matrice di adiacenza}
+Versione senza assunzioni con matrice di adiacenza.
+
+\begin{mznbox}{}
+int: N; 
+
+% boolean matrix where true = edge
+array[1..N, 1..N] of bool: E;
+
+% variables: 0 = no edge, 1..3 are the colors
+array[1..N, 1..N] of var 0..3: color;
+
+% graph structure constraints
+constraint forall(i, j in 1..N where i < j) (
+    % undirected graph symmetry
+    color[i, j] == color[j, i] /\ 
+
+    % color iff edge
+    (E[i, j] <-> color[i, j] > 0)
+);
+
+% no self-loops
+constraint forall(i in 1..N) (color[i, i] == 0);
+
+% triangle constraint
+constraint forall(i, j, k in 1..N where i < j /\ j < k) (
+    E[i, j] /\ E[j, k] /\ E[i, k] ->
+        not (color[i, j] == color[j, k] /\ color[j, k] == color[i, k])
+);
+
+solve satisfy;  
+\end{mznbox}
+
+
+\subsection{v.2: in funzione degli archi}
+Versione ``edge-centric''. Se facciamo anche assunzioni sui dati in input (che per ogni arco $(u, v)$ valga $u < v$, e che la lista degli archi sia fornita in ordine lessicografico), possiamo identificare i triangoli in modo semplice.
+
+Questa versione è più `pulita' a livello di modellazione, ma potenzialmente più lenta computazionalmente (triplo ciclo sugli indici degli archi)
+
+\begin{itemize}
+    \item inserendo il \texttt{u[i] == u[j] /\ v[i] == u[k] /\ v[j] == v[k]} nel \texttt{where}, i triangoli vengono identificati a tempo di compilazione (e non come vincoli dal risolutore), rendendo il codice più performante (su grafo completo $K_{10}$, $\sim$50ms in meno)
+\end{itemize}
+
+\begin{mznbox}{}
+int: N; % nodes
+int: M; % edges
+
+% edges: edge i = (u[i], v[i])
+array[1..M] of int: u;
+array[1..M] of int: v;
+
+% we have to assign colors to edges 
+array[1..M] of var 1..3: color;
+
+% we can check that our assumptions hold:
+constraint assert(forall(i in 1..M) (u[i] < v[i]), 
+    "!(u[i] < v[i])");
+
+constraint assert(forall(i in 1..M-1) (
+    u[i] < u[i+1] \/ (u[i] == u[i+1] /\ v[i] < v[i+1])
+), "u, v aren't ordered");
+
+% if our assumptions hold, we can check:
+constraint forall(i, j, k in 1..M where i < j /\ j < k /\ u[i] == u[j] /\ v[i] == u[k] /\ v[j] == v[k]) 
+(
+    not (color[i] == color[j] /\ color[j] == color[k])
+);
+
+solve satisfy;
+
+\end{mznbox}
+
+\end{document}
