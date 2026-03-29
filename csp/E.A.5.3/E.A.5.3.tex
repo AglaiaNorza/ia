@@ -167,12 +167,12 @@ solve satisfy;
 
 
 \subsection{v.2: in funzione degli archi}
-Versione ``edge-centric''. Se facciamo anche assunzioni sui dati in input (che per ogni arco $(u, v)$ valga $u < v$, e che la lista degli archi sia fornita in ordine lessicografico), possiamo identificare i triangoli in modo semplice.
+Versione ``edge-centric''. Se facciamo anche assunzioni sui dati in input (che per ogni arco $(u, v)$ valga $u < v$, e che le liste dei nodi siano fornite in ordine crescente), possiamo identificare i triangoli in modo semplice.
 
-Questa versione è più `pulita' a livello di modellazione, ma potenzialmente più lenta computazionalmente (triplo ciclo sugli indici degli archi)
+Questa versione è più `pulita' a livello di modellazione (più vicina alla modellazione matematica), ma potenzialmente più lenta computazionalmente (nella pratica, non ho in realtà rilevato molta differenza a livello di tempo di risoluzione).
 
 \begin{itemize}
-    \item inserendo il \texttt{u[i] == u[j] /\ v[i] == u[k] /\ v[j] == v[k]} nel \texttt{where}, i triangoli vengono identificati a tempo di compilazione (e non come vincoli dal risolutore), rendendo il codice più performante (su grafo completo $K_{10}$, $\sim$50ms in meno)
+    \item inserendo il \texttt{u[i] == u[j] /\ v[i] == u[k] /\ v[j] == v[k]} nel \texttt{where}, i triangoli vengono identificati a tempo di compilazione (e non come vincoli dal solver), rendendo il codice più performante (su grafo completo $K_{10}$, $\sim$50ms in meno)
 \end{itemize}
 
 \begin{mznbox}{}
