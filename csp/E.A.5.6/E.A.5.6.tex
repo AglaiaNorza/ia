@@ -1,0 +1,129 @@
+\documentclass[12pt]{article}
+\usepackage{amsmath}
+
+\usepackage{xcolor}
+
+\usepackage{listings}
+\usepackage[most]{tcolorbox}
+
+% style stolen from haskell notes (non avrei ricreato appositamente altrimenti...)
+\definecolor{mzbg}{HTML}{F8F9FA}
+\definecolor{mzpurple}{HTML}{5E5086}
+\definecolor{mzgreen}{HTML}{118C4F}
+\definecolor{mzred}{HTML}{C0392B}
+\definecolor{mzblue}{HTML}{2E86C1} 
+\definecolor{mznumber}{HTML}{ADB5BD}
+\definecolor{mztitlebg}{HTML}{2C3E50}
+
+\lstdefinelanguage{MiniZinc}{
+    morekeywords={include, var, par, array, of, int, float, set, bool, constraint, solve, satisfy, minimize, maximize, forall, exists, where, if, then, else, endif},
+    morekeywords=[2]{alldifferent, abs, sum, count, min, max, card}, 
+    sensitive=true,
+    morecomment=[l]{\%},
+    morecomment=[s]{/*}{*/},
+    morestring=[b]",
+}
+
+\lstdefinestyle{mznstyle}{
+    language=MiniZinc,
+    commentstyle=\color{mzgreen}\itshape,
+    keywordstyle=\color{mzpurple}\bfseries,
+    keywordstyle=[2]\color{mzblue},
+    numberstyle=\tiny\color{mznumber},
+    stringstyle=\color{mzred},
+    basicstyle=\ttfamily\footnotesize,
+    breaklines=true,
+    showstringspaces=false,
+    tabsize=2,
+    numbers=none
+}
+
+\newtcblisting{mznbox}[1]{
+    enhanced,
+    skin=bicolor,
+    colback=mzbg,
+    colbacktitle=mztitlebg,
+    coltitle=white,
+    colframe=mztitlebg,
+    boxrule=0.5pt,
+    arc=4pt,
+    drop shadow=black!10!white,
+    fonttitle=\bfseries\sffamily,
+    title=#1,
+    listing only,
+    listing options={style=mznstyle, numbers=left, numbersep=10pt},
+    left=15pt,
+    top=4pt,
+    bottom=4pt,
+    breakable
+}
+
+\title{E.A.5.6 - CSP: Cards}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+\vspace{-5em}
+\section{Modellazione}
+
+\begin{itemize}
+    \item \textbf{variabili}: $X = \{X_{i,j} \mid 1 \leq i \leq n, 1 \leq j \leq k\}$ - ogni variabile $X_{i, j}$ rappresenta la $j$-esima copia della carta con il numero $i$
+
+    \item \textbf{domini}: $D_{X_{i,j}} = \{1 \dots k \times n\}$ per tutte le variabili $X_{i, j}$ - rappresentano le posizioni dove si possono collocare le carte
+
+    \item \textbf{vincoli}: 
+        \begin{itemize}
+            \item alldiff($X_{1,1}, \dots X_{n, k}$) (in ogni posizione ci può essere al massimo una carta)
+            \item $X_{i, j+1} - X_{i,j} = i+1$ \ per $1 \leq i \leq n, 1 \leq j \leq k-1$ 
+                \subitem vincolo sulla distanza, in cui introduciamo anche una concezione di ordine che ci fa da ``symmetry-breaker'': le carte sono disposte in ordine di copie
+        \end{itemize}
+\end{itemize}
+
+
+\section{Istanziazione}
+
+\begin{itemize}
+    \item \textbf{variabili}: \\
+     $n=4$ carte diverse e $k=2$ copie per ciascuna, $2 \times 4 = 8$ variabili:
+    $$X = \{X_{1,1}, X_{1,2}, X_{2,1}, X_{2,2}, X_{3,1}, X_{3,2}, X_{4,1}, X_{4,2}\}$$
+    
+    \item \textbf{domini}: \\
+        $$D_{X_{i,j}} = \{1, 2, 3, 4, 5, 6, 7, 8\} \quad \text{per ogni } X_{i,j} \in X$$
+    
+    \item \textbf{vincoli}:
+    \begin{itemize}
+        \item posizioni
+            $$\text{alldiff}(X_{1,1}, X_{1,2}, X_{2,1}, X_{2,2}, X_{3,1}, X_{3,2}, X_{4,1}, X_{4,2})$$
+        
+        \item distanza e simmetrie:
+        \begin{align*}
+            X_{1,2} - X_{1,1} &= 2 \quad \text{(1 carta a dividere le due copie di 1)} \\
+            X_{2,2} - X_{2,1} &= 3 \quad \text{(2 carte a dividere le due copie di 2)} \\
+            X_{3,2} - X_{3,1} &= 4 \quad \text{(3 carte a dividere le due copie di 3)} \\
+            X_{4,2} - X_{4,1} &= 5 \quad \text{(4 carte a dividere le due copie di 4)}
+        \end{align*}
+    \end{itemize}
+\end{itemize}
+
+\section{Codifica in MiniZinc}
+
+\begin{mznbox}{}
+include "alldifferent.mzn";
+
+int: n;
+int: k;
+
+array[1..n, 1..k] of var 1..(n*k): X;
+
+% ho trovato array1d nei built-in (rende una matrice un array monodimensionale)
+constraint alldifferent(array1d(X));
+
+constraint forall(i in 1..n, j in 1..k-1)(
+    X[i, j+1] - X[i, j] = i+1
+);
+
+solve satisfy;
+\end{mznbox}
+
+\end{document}
