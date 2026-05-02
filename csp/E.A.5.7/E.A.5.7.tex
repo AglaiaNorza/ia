@@ -1,0 +1,190 @@
+\documentclass[12pt]{article}
+\usepackage{amsmath}
+
+\usepackage{xcolor}
+
+\usepackage{listings}
+\usepackage[most]{tcolorbox}
+\usepackage[colorlinks, allcolors=blue]{hyperref}
+
+% style stolen from haskell notes (non avrei ricreato appositamente altrimenti...)
+\definecolor{mzbg}{HTML}{F8F9FA}
+\definecolor{mzpurple}{HTML}{5E5086}
+\definecolor{mzgreen}{HTML}{118C4F}
+\definecolor{mzred}{HTML}{C0392B}
+\definecolor{mzblue}{HTML}{2E86C1} 
+\definecolor{mznumber}{HTML}{ADB5BD}
+\definecolor{mztitlebg}{HTML}{2C3E50}
+
+\lstdefinelanguage{MiniZinc}{
+    morekeywords={include, var, par, array, of, int, float, set, bool, constraint, solve, satisfy, minimize, maximize, forall, exists, where, if, then, else, endif},
+    morekeywords=[2]{alldifferent, abs, sum, count, min, max, card}, 
+    sensitive=true,
+    morecomment=[l]{\%},
+    morecomment=[s]{/*}{*/},
+    morestring=[b]",
+}
+
+\lstdefinestyle{mznstyle}{
+    language=MiniZinc,
+    commentstyle=\color{mzgreen}\itshape,
+    keywordstyle=\color{mzpurple}\bfseries,
+    keywordstyle=[2]\color{mzblue},
+    numberstyle=\tiny\color{mznumber},
+    stringstyle=\color{mzred},
+    basicstyle=\ttfamily\footnotesize,
+    breaklines=true,
+    showstringspaces=false,
+    tabsize=2,
+    numbers=none
+}
+
+\newtcblisting{mznbox}[1]{
+    enhanced,
+    skin=bicolor,
+    colback=mzbg,
+    colbacktitle=mztitlebg,
+    coltitle=white,
+    colframe=mztitlebg,
+    boxrule=0.5pt,
+    arc=4pt,
+    drop shadow=black!10!white,
+    fonttitle=\bfseries\sffamily,
+    title=#1,
+    listing only,
+    listing options={style=mznstyle, numbers=left, numbersep=10pt},
+    left=15pt,
+    top=4pt,
+    bottom=4pt,
+    breakable
+}
+
+\title{E.A.5.7 - CSP: Cards 2}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+\vspace{-5em}
+\section{Modellazione}
+
+\subsection*{variabili}
+        \begin{itemize}
+            \item $X =\{ X_i \mid 1\leq i \leq N\}$ - ogni variabile rappresenta il valore della carta nella posizione $i$
+            \item $P = \{P_i \mid 1 \leq i \leq 3 \}$ - rappresentano le posizioni dei ``pivot''
+        \end{itemize}
+        \subsection*{domini}
+        \begin{itemize}
+            \item $D_{X_i} =\{ 1, \dots, M\}$ per ogni $X_i$
+            \item $D_{P_1} = \{ 2, \dots, N - 1 - D \}$ - deve esserci spazio per il primo tratto crescente e per la distanza $D$
+            \item $D_{P_2} = \{ 3, \dots, N - 2 \}$ - deve trovarsi tra $P_1$ e $P_3$
+            \item $D_{P_3} = \{ 4, \dots, N - 1 \}$ - deve esserci spazio per l'ultimo tratto decrescente
+        \end{itemize}
+        (potremmo anche scrivere che $D_P = \{1, \dots, M\}$ e far gestire il resto dai vincoli, ma in questo modo restringiamo i domini prima di iniziare la computazione)
+    \subsection*{vincoli}
+        \begin{itemize}
+                \item ordinamento delle sequenze:
+            \begin{itemize}
+            \item $X_i < X_{i+1}$ per ogni $1 \leq i < P_1$
+            \item $X_i > X_{i+1}$ per ogni $P_1 \leq i < P_2$ 
+            \item $X_i < X_{i+1}$ per ogni $P_2 \leq i < P_3$
+            \item $X_i > X_{i+1}$ per ogni $P_3 \leq i < N$
+            \end{itemize}
+                \item vincoli sui pivot:
+            \begin{itemize}
+            \item $P_1 < P_2 < P_3$ - fissiamo un ordinamento
+                
+            \item $P_3 = P_1 + D$ - distanza tra i due picchi
+            \end{itemize}
+
+        \item le carte utilizzate sono quelle della collezione:
+            \begin{itemize}
+                \item $[X] = Cards$ 
+                    \subitem dove $[X]$ è il multiset contenente gli elementi di $X$
+                \item (alternativamente esprimibile come:
+
+                    \subitem per ogni valore $v \in \{1, \dots, M\}$
+
+                    $\quad |\{i \in \{1, \dots, N\} \mid X_i = v\}| = |\{j \in \{1, \dots, N\} \mid Cards_j = v\}|$
+                    \subitem ovvero, per ogni possibile valore di una carta, il numero di volte in cui quel valore appare in $X$ è uguale al numero di volte in cui appare in $Cards$)
+            \end{itemize}
+        \end{itemize}
+
+\section{Istanziazione}
+$$(Cards, N, M, D) = (\{1, 1, 2, 2, 3, 3, 4\}, 7, 4, 4)$$
+
+\subsection*{variabili e domini}
+\begin{itemize}
+    \item $X = \{X_1, X_2, X_3, X_4, X_5, X_6, X_7\}$ con $D_{X_i} = \{1, 2, 3, 4\}$ per ogni $i \in \{1, \dots, 7\}$.
+    \item $P = \{P_1, P_2, P_3\}$ con:
+    \begin{itemize}
+        \item $D_{P_1} = \{2\}$ ($N - 1 - D = 7 - 1 - 4 = 2$)
+        \item $D_{P_2} = \{3, 4, 5\}$
+        \item $D_{P_3} = \{6\}$ ($P_3 = P_1 + D = 2 + 4 = 6$)
+    \end{itemize}
+\end{itemize}
+
+\subsection*{vincoli}
+\begin{itemize}
+\item \textbf{ordinamento}
+    \begin{enumerate}
+        \item $X_1 < X_{2}$         
+        \item $X_i > X_{i+1}$ per $2 \leq i < P_2$
+        \item $X_i < X_{i+1}$ per $P_2 \leq i < 6$
+        \item $X_6 > X_{7}$
+    \end{enumerate}
+
+    \item \textbf{distanza e pivot}
+    \begin{itemize}
+        \item $P_3 = P_1 + 4$
+        \item $P_1 < P_2 < P_3$, ovvero $2 < P_2 < 6$
+    \end{itemize}
+
+    \item \textbf{carte}
+        \begin{itemize}
+            \item il multiset $[X_1, X_2, X_3, X_4, X_5, X_6, X_7]$ deve essere uguale a $\{1, 1, 2, 2, 3, 3, 4\}$.
+        \item formalmente:
+        \begin{itemize}
+            \item $|\{i \mid X_i = 1\}| = 2$
+            \item $|\{i \mid X_i = 2\}| = 2$
+            \item $|\{i \mid X_i = 3\}| = 2$
+            \item $|\{i \mid X_i = 4\}| = 1$
+        \end{itemize}
+    \end{itemize}
+\end{itemize}
+
+\section{Codifica in MiniZinc}
+
+\begin{mznbox}{}
+include "globals.mzn"; % per global_cardinality
+
+int: M;
+int: N;
+int: D;
+array[1..N] of int: C;
+
+array[1..N] of var 1..M: X;
+
+var 2..N-1-D: P1; % primo picco
+var 3..N-2: P2; % minimo locale 
+var 4..N-1: P3; % secondo picco
+
+array[1..M] of int: counts = [count(C, v) | v in 1..M];
+constraint global_cardinality(X, [v | v in 1..M], counts);
+
+% alternativamente:
+% constraint sorted(C) == sorted (X);
+
+constraint P1 < P2;
+constraint P2 < P3;
+constraint P3 = P1 + D;
+
+constraint forall(i in 1..P1-1) (X[i] < X[i+1]);
+constraint forall(i in P1..P2-1) (X[i] > X[i+1]);
+constraint forall(i in P2..P3-1) (X[i] < X[i+1]);
+constraint forall(i in P3..N-1) (X[i] > X[i+1]);
+
+solve satisfy;
+\end{mznbox}
+
+\end{document}
