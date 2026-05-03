@@ -1,0 +1,136 @@
+\documentclass[10pt]{article}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{hyperref}
+
+\usepackage{tikz}
+\usetikzlibrary{positioning, arrows.meta}
+
+
+\title{E.A.6.4 - nQueens SAT}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+\vspace{-6em}
+
+\section{Modellazione}
+
+Sia $x_{i,j}$ una variabile proposizionale tale che $x_{i,j} = \top \iff$ c'è una regina nella posizione $[i, j]$ della scacchiera $n \times n$. 
+
+Introduciamo le seguenti formule:
+
+\paragraph{Almeno una regina per riga:}
+\[
+    \varphi_{ar} = \bigwedge_{i=1}^{n} \bigvee_{j=1}^{n} x_{i,j}
+\]
+
+\paragraph{Al massimo una regina per riga:}
+\[
+\varphi_{mr} =\bigwedge_{i=1}^{n} \bigwedge_{j_1=1}^{n-1} \bigwedge_{j_2=j_1+1}^{n} (\neg x_{i,j_1} \lor \neg x_{i,j_2})
+\]
+
+\paragraph{Al massimo una regina per colonna:}
+\[
+    \varphi_{mc}=\bigwedge_{j=1}^{n} \bigwedge_{i_1=1}^{n-1} \bigwedge_{i_2=i_1+1}^{n} (\neg x_{i_1,j} \lor \neg x_{i_2,j})
+\]
+
+\paragraph{Al massimo una regina per diagonale discendente:}
+\[
+    \varphi_{md1}=\bigwedge_{i=1}^{n-1} \bigwedge_{j=1}^{n-1} \bigwedge_{k=1}^{\min(n-i, n-j)} (\neg x_{i,j} \lor \neg x_{i+k, j+k})
+\]
+
+\paragraph{Al massimo una regina per diagonale ascendente:}
+\[
+\varphi_{md2}=\bigwedge_{i=1}^{n-1} \bigwedge_{j=2}^{n} \bigwedge_{k=1}^{\min(n-i, j-1)} (\neg x_{i,j} \lor \neg x_{i+k, j-k})
+\]
+
+\paragraph{}
+
+La codifica in CNF del problema n-queens è data dalla loro congiunzione:
+$$\Phi = \varphi_{ar} \land \varphi_{mc} \land \varphi_{mr} \land \varphi_{md1} \land \varphi_{md2}$$
+
+\section{Istanziazione}
+Le variabili sono $x_{i,j}$ con $i, j \in \{1, 2, 3, 4\}$. $\Phi$ è la congiunzione dei seguenti insiemi di clausole.
+
+\paragraph{1. Almeno una regina per riga (4 clausole):}
+\[
+\begin{aligned}
+    & (x_{1,1} \lor x_{1,2} \lor x_{1,3} \lor x_{1,4}) \land \\
+    & (x_{2,1} \lor x_{2,2} \lor x_{2,3} \lor x_{2,4}) \land \\
+    & (x_{3,1} \lor x_{3,2} \lor x_{3,3} \lor x_{3,4}) \land \\
+    & (x_{4,1} \lor x_{4,2} \lor x_{4,3} \lor x_{4,4})
+\end{aligned}
+\]
+
+\paragraph{2. Al massimo una regina per riga (24 clausole, 6 per riga):}
+Per la riga $i=1$:
+\[
+\begin{aligned}
+    & (\neg x_{1,1} \lor \neg x_{1,2}) \land (\neg x_{1,1} \lor \neg x_{1,3}) \land (\neg x_{1,1} \lor \neg x_{1,4}) \land \\
+    & (\neg x_{1,2} \lor \neg x_{1,3}) \land (\neg x_{1,2} \lor \neg x_{1,4}) \land (\neg x_{1,3} \lor \neg x_{1,4})
+\end{aligned}
+\]
+\textit{(queste 6 combinazioni si ripetono per le righe $2, 3, 4$)}
+
+\paragraph{3. Al massimo una regina per colonna (24 clausole, 6 per colonna):}
+Per la colonna $j=1$:
+\[
+\begin{aligned}
+    & (\neg x_{1,1} \lor \neg x_{2,1}) \land (\neg x_{1,1} \lor \neg x_{3,1}) \land (\neg x_{1,1} \lor \neg x_{4,1}) \land \\
+    & (\neg x_{2,1} \lor \neg x_{3,1}) \land (\neg x_{2,1} \lor \neg x_{4,1}) \land (\neg x_{3,1} \lor \neg x_{4,1})
+\end{aligned}
+\]
+\textit{(si ripetono per le colonne $2, 3, 4$)}
+
+\paragraph{4. Al massimo una regina per diagonale discendente $\searrow$ (14 clausole):}
+\begin{itemize}
+    \item Diagonale principale (4 celle: $x_{1,1}, x_{2,2}, x_{3,3}, x_{4,4}$): genera 6 clausole.
+    \[
+    \begin{aligned}
+        & (\neg x_{1,1} \lor \neg x_{2,2}) \land (\neg x_{1,1} \lor \neg x_{3,3}) \land (\neg x_{1,1} \lor \neg x_{4,4}) \land \\
+        & (\neg x_{2,2} \lor \neg x_{3,3}) \land (\neg x_{2,2} \lor \neg x_{4,4}) \land (\neg x_{3,3} \lor \neg x_{4,4})
+    \end{aligned}
+    \]
+    \item Sopra la d. principale (3 celle: $x_{1,2}, x_{2,3}, x_{3,4}$): genera 3 clausole.
+    \[
+        (\neg x_{1,2} \lor \neg x_{2,3}) \land (\neg x_{1,2} \lor \neg x_{3,4}) \land (\neg x_{2,3} \lor \neg x_{3,4})
+    \]
+    \item Sotto la d. principale (3 celle: $x_{2,1}, x_{3,2}, x_{4,3}$): genera 3 clausole.
+    \[
+        (\neg x_{2,1} \lor \neg x_{3,2}) \land (\neg x_{2,1} \lor \neg x_{4,3}) \land (\neg x_{3,2} \lor \neg x_{4,3})
+    \]
+    \item D. agli estremi (2 celle ciascuna): generano 1 clausola ciascuna.
+    \[
+        (\neg x_{1,3} \lor \neg x_{2,4}) \quad \text{e} \quad (\neg x_{3,1} \lor \neg x_{4,2})
+    \]
+\end{itemize}
+
+\paragraph{5. Al massimo una regina per diagonale ascendente $\nearrow$ (14 clausole):}
+\begin{itemize}
+    \item Diagonale principale (4 celle: $x_{4,1}, x_{3,2}, x_{2,3}, x_{1,4}$): genera 6 clausole.
+    \[
+    \begin{aligned}
+        & (\neg x_{4,1} \lor \neg x_{3,2}) \land (\neg x_{4,1} \lor \neg x_{2,3}) \land (\neg x_{4,1} \lor \neg x_{1,4}) \land \\
+        & (\neg x_{3,2} \lor \neg x_{2,3}) \land (\neg x_{3,2} \lor \neg x_{1,4}) \land (\neg x_{2,3} \lor \neg x_{1,4})
+    \end{aligned}
+    \]
+    \item Sopra la d. principale (3 celle: $x_{3,1}, x_{2,2}, x_{1,3}$): genera 3 clausole.
+    \[
+        (\neg x_{3,1} \lor \neg x_{2,2}) \land (\neg x_{3,1} \lor \neg x_{1,3}) \land (\neg x_{2,2} \lor \neg x_{1,3})
+    \]
+    \item Sotto la d. principale (3 celle: $x_{4,2}, x_{3,3}, x_{2,4}$): genera 3 clausole.
+    \[
+        (\neg x_{4,2} \lor \neg x_{3,3}) \land (\neg x_{4,2} \lor \neg x_{2,4}) \land (\neg x_{3,3} \lor \neg x_{2,4})
+    \]
+    \item D. agli estremi (2 celle ciascuna): generano 1 clausola ciascuna.
+    \[
+        (\neg x_{2,1} \lor \neg x_{1,2}) \quad \text{e} \quad (\neg x_{4,3} \lor \neg x_{3,4})
+    \]
+\end{itemize}
+
+\section{Codec}
+Ho scritto un piccolo encoder molto naive in Haskell [\href{https://github.com/AglaiaNorza/ia/blob/main/SATencoder/naive-encoder.hs}{qui}] e uno meno naive (multithreaded) in c++ [\href{https://github.com/AglaiaNorza/ia/tree/main/SATencoder/multithreaded}{qui}] (ho inserito anche encoding tramite Tseitin transformation per formule non nativamente in CNF).
+
+\end{document}

@@ -31,7 +31,7 @@ public:
             // at least one queen per row
             encoder.writeDirectClause(rowLits, ctx);
 
-            // at most one queen per row (Pairwise Negation)
+            // at most one queen per row
             for (int i = 0; i < N; ++i) {
                 for (int j = i + 1; j < N; ++j) {
                     encoder.writeDirectClause({-rowLits[i], -rowLits[j]}, ctx);
@@ -56,7 +56,7 @@ public:
                 }
             }
         }
-
+        // diagonals (and antidiagonals)
         for (int k = -(N - 1) + tId; k < N; k += tCount) {
             std::vector<int> diagLits;
             for (int r = 0; r < N; ++r) {
