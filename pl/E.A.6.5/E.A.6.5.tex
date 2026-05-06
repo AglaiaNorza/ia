@@ -1,0 +1,189 @@
+\documentclass[10pt]{article}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{hyperref}
+\usepackage[svgnames]{xcolor} 
+\usepackage{listings}
+\usepackage[skins,listings,breakable]{tcolorbox}
+
+\definecolor{cppbg}{HTML}{F8F9FA}     
+\definecolor{boxtitlebg}{HTML}{2B2D31}
+\definecolor{cppblue}{HTML}{00599C}   
+\definecolor{cppgreen}{HTML}{138A07} 
+\definecolor{cppred}{HTML}{B11515}  
+\definecolor{cppnumber}{HTML}{888888} 
+
+\lstdefinestyle{cppstyle}{
+    language=C++,
+    commentstyle=\color{cppgreen}\itshape,
+    keywordstyle=\color{cppblue}\bfseries,
+    numberstyle=\tiny\color{cppnumber},
+stringstyle=\color{cppred},
+basicstyle=\ttfamily\footnotesize,
+breaklines=true,
+    showstringspaces=false,
+    tabsize=4,                    
+    numbers=none                     
+}
+
+\newtcblisting{cppbox}[1]{
+    enhanced,
+    skin=bicolor,
+    colback=cppbg,
+    colbacktitle=boxtitlebg,
+    coltitle=white,
+    colframe=boxtitlebg,
+    boxrule=0.5pt,
+    arc=4pt,
+    drop shadow=black!10!white,
+    fonttitle=\bfseries\sffamily,
+    title=#1,
+    listing only,
+    listing options={style=cppstyle, numbers=left, numbersep=10pt},
+    left=15pt,
+    top=4pt,
+    bottom=4pt,
+    breakable
+}
+
+
+
+\title{E.A.6.5 - Schur's lemma}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+\vspace{-6em}
+
+\section{Modellazione}
+
+Definiamo le variabili atomiche $X_{i,j}$ t.c. $X_{i,j} = \top \iff$ la biglia $i \in \{1, \dots, n\}$ si trova nell'urna $j \in \{1, 2, 3\}$
+
+La formula proposizionale è la congiunzione dei seguenti vincoli:
+
+\begin{enumerate}
+    \item ogni biglia $i$ deve essere assegnata ad almeno un'urna
+        $$ \varphi_{ex} = \bigwedge_{i=1}^{n} (X_{i,1} \lor X_{i,2} \lor X_{i,3}) $$
+
+    \item ogni biglia non può trovarsi in più di un'urna
+    $$ \varphi_{un} = \bigwedge_{i=1}^{n} \left( (\neg X_{i,1} \lor \neg X_{i,2}) \land (\neg X_{i,1} \lor \neg X_{i,3}) \land (\neg X_{i,2} \lor \neg X_{i,3}) \right) $$
+
+    \item per ogni urna $j$, non devono esistere tre biglie $x, y, z$ tali che $x + y = z$    
+        $$ \varphi_{s} = \bigwedge_{j=1}^{3} \bigwedge_{\substack{1 \le x, y, z \le n \\ x+y=z}} (\neg X_{x,j} \lor \neg X_{y,j} \lor \neg X_{z,j}) $$
+        \subitem (consideriamo anche il caso in cui le biglie non siano distinte (es. 1+1=2))
+\end{enumerate}
+
+
+Ovvero
+$$ \Phi_n = \varphi_{ex} \land \varphi_{un} \land \varphi_{s} $$
+
+\section{Istanziazione}
+
+\begin{enumerate}
+    \item vincoli di esistenza e unicità
+\begin{itemize}
+    \item \textbf{biglia 1}: $(X_{1,1} \lor X_{1,2} \lor X_{1,3}) \land (\neg X_{1,1} \lor \neg X_{1,2}) \land (\neg X_{1,1} \lor \neg X_{1,3}) \land (\neg X_{1,2} \lor \neg X_{1,3})$
+    \item \textbf{biglia 2}: $(X_{2,1} \lor X_{2,2} \lor X_{2,3}) \land (\neg X_{2,1} \lor \neg X_{2,2}) \land (\neg X_{2,1} \lor \neg X_{2,3}) \land (\neg X_{2,2} \lor \neg X_{2,3})$
+    \item \textbf{biglia 3}: $(X_{3,1} \lor X_{3,2} \lor X_{3,3}) \land (\neg X_{3,1} \lor \neg X_{3,2}) \land (\neg X_{3,1} \lor \neg X_{3,3}) \land (\neg X_{3,2} \lor \neg X_{3,3})$
+    \item \textbf{biglia 4}: $(X_{4,1} \lor X_{4,2} \lor X_{4,3}) \land (\neg X_{4,1} \lor \neg X_{4,2}) \land (\neg X_{4,1} \lor \neg X_{4,3}) \land (\neg X_{4,2} \lor \neg X_{4,3})$
+    \item \textbf{biglia 5}: $(X_{5,1} \lor X_{5,2} \lor X_{5,3}) \land (\neg X_{5,1} \lor \neg X_{5,2}) \land (\neg X_{5,1} \lor \neg X_{5,3}) \land (\neg X_{5,2} \lor \neg X_{5,3})$
+\end{itemize}
+
+    \item vincoli di Schur
+        \subitem le terne $(x, y, z)$ tali che $x+y=z$ sono: 
+        \subitem $(1,1,2), (1,2,3), (1,3,4), (1,4,5), (2,2,4), (2,3,5)$
+
+    \begin{itemize}
+    \item \textbf{terna (1,1,2)}: $(\neg X_{1,1} \lor \neg X_{2,1})$
+    \item \textbf{terna (1,2,3)}: $(\neg X_{1,1} \lor \neg X_{2,1} \lor \neg X_{3,1})$
+    \item \textbf{terna (1,3,4)}: $(\neg X_{1,1} \lor \neg X_{3,1} \lor \neg X_{4,1})$
+    \item \textbf{terna (1,4,5)}: $(\neg X_{1,1} \lor \neg X_{4,1} \lor \neg X_{5,1})$
+    \item \textbf{terna (2,2,4)}: $(\neg X_{2,1} \lor \neg X_{4,1})$
+    \item \textbf{terna (2,3,5)}: $(\neg X_{2,1} \lor \neg X_{3,1} \lor \neg X_{5,1})$
+\end{itemize}
+
+\begin{itemize}
+    \item \textbf{terna (1,1,2)}: $(\neg X_{1,2} \lor \neg X_{2,2})$
+    \item \textbf{terna (1,2,3)}: $(\neg X_{1,2} \lor \neg X_{2,2} \lor \neg X_{3,2})$
+    \item \textbf{terna (1,3,4)}: $(\neg X_{1,2} \lor \neg X_{3,2} \lor \neg X_{4,2})$
+    \item \textbf{terna (1,4,5)}: $(\neg X_{1,2} \lor \neg X_{4,2} \lor \neg X_{5,2})$    
+    \item \textbf{terna (2,2,4)}: $(\neg X_{2,2} \lor \neg X_{4,2})$
+    \item \textbf{terna (2,3,5)}: $(\neg X_{2,2} \lor \neg X_{3,2} \lor \neg X_{5,2})$
+\end{itemize}
+
+\begin{itemize}
+    \item \textbf{terna (1,1,2)}: $(\neg X_{1,3} \lor \neg X_{2,3})$
+    \item \textbf{terna (1,2,3)}: $(\neg X_{1,3} \lor \neg X_{2,3} \lor \neg X_{3,3})$
+    \item \textbf{terna (1,3,4)}: $(\neg X_{1,3} \lor \neg X_{3,3} \lor \neg X_{4,3})$
+    \item \textbf{terna (1,4,5)}: $(\neg X_{1,3} \lor \neg X_{4,3} \lor \neg X_{5,3})$
+    \item \textbf{terna (2,2,4)}: $(\neg X_{2,3} \lor \neg X_{4,3})$    
+    \item \textbf{terna (2,3,5)}: $(\neg X_{2,3} \lor \neg X_{3,3} \lor \neg X_{5,3})$
+\end{itemize}
+
+\end{enumerate}
+
+\section{Codec}
+(encoder in cpp)
+
+\begin{cppbox}{}
+#pragma once
+
+#include "Encoder.hpp"
+#include "Problem.hpp"
+#include <string>
+#include <vector>
+
+class SchursLemma : public Problem {
+private:
+    int N;
+
+    inline std::string vName(int ball, int urn) const {
+        return "X_" + std::to_string(ball) + "_" + std::to_string(urn);
+    }
+
+public:
+    inline SchursLemma(int n) : N(n) {}
+
+    void generateConstraints(Encoder& encoder, EncodingContext& ctx, int tId, int tCount) override {
+        
+        // esistenza e unicita'
+        // (ogni thread gestisce le biglie i tali che (i % tCount == tId))
+        for (int i = 1 + tId; i <= N; i += tCount) {
+            std::vector<int> lits;
+            for (int j = 1; j <= 3; ++j) {
+                lits.push_back(encoder.getVar(vName(i, j)));
+            }
+
+            // ogni biglia in almeno un'urna
+            encoder.writeDirectClause(lits, ctx);
+
+            // ogni biglia in al massimo un'urna
+            encoder.writeDirectClause({-lits[0], -lits[1]}, ctx);
+            encoder.writeDirectClause({-lits[0], -lits[2]}, ctx);
+            encoder.writeDirectClause({-lits[1], -lits[2]}, ctx);
+        }
+
+        // vincolo di schur
+        for (int x = 1 + tId; x <= N; x += tCount) {
+            // assumiamo x <= y per evitare di generare due volte la
+            // stessa combinazione (es. 1+2=3 e 2+1=3 generano le stesse clausole)
+            for (int y = x; x + y <= N; ++y) {
+                int z = x + y;
+                
+                for (int j = 1; j <= 3; ++j) {
+                    int vx = encoder.getVar(vName(x, j));
+                    int vy = encoder.getVar(vName(y, j));
+                    int vz = encoder.getVar(vName(z, j));
+
+                    encoder.writeDirectClause({-vx, -vy, -vz}, ctx);
+                }
+            }
+        }
+    }
+};
+\end{cppbox}
+
+
+
+\end{document}
