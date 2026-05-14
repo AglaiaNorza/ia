@@ -1,0 +1,211 @@
+\documentclass[12pt]{article}
+\usepackage{amsmath}
+
+\usepackage{xcolor}
+
+\usepackage{listings}
+\usepackage[most]{tcolorbox}
+\usepackage[colorlinks, allcolors=blue]{hyperref}
+
+% style stolen from haskell notes (non avrei ricreato appositamente altrimenti...)
+\definecolor{mzbg}{HTML}{F8F9FA}
+\definecolor{mzpurple}{HTML}{5E5086}
+\definecolor{mzgreen}{HTML}{118C4F}
+\definecolor{mzred}{HTML}{C0392B}
+\definecolor{mzblue}{HTML}{2E86C1} 
+\definecolor{mznumber}{HTML}{ADB5BD}
+\definecolor{mztitlebg}{HTML}{2C3E50}
+
+\lstdefinelanguage{MiniZinc}{
+    morekeywords={include, var, par, array, of, int, float, set, bool, constraint, solve, satisfy, minimize, maximize, forall, exists, where, if, then, else, endif},
+    morekeywords=[2]{alldifferent, abs, sum, count, min, max, card}, 
+    sensitive=true,
+    morecomment=[l]{\%},
+    morecomment=[s]{/*}{*/},
+    morestring=[b]",
+}
+
+\lstdefinestyle{mznstyle}{
+    language=MiniZinc,
+    commentstyle=\color{mzgreen}\itshape,
+    keywordstyle=\color{mzpurple}\bfseries,
+    keywordstyle=[2]\color{mzblue},
+    numberstyle=\tiny\color{mznumber},
+    stringstyle=\color{mzred},
+    basicstyle=\ttfamily\footnotesize,
+    breaklines=true,
+    showstringspaces=false,
+    tabsize=2,
+    numbers=none
+}
+
+\newtcblisting{mznbox}[1]{
+    enhanced,
+    skin=bicolor,
+    colback=mzbg,
+    colbacktitle=mztitlebg,
+    coltitle=white,
+    colframe=mztitlebg,
+    boxrule=0.5pt,
+    arc=4pt,
+    drop shadow=black!10!white,
+    fonttitle=\bfseries\sffamily,
+    title=#1,
+    listing only,
+    listing options={style=mznstyle, numbers=left, numbersep=10pt},
+    left=15pt,
+    top=4pt,
+    bottom=4pt,
+    breakable
+}
+
+\title{E.A.5.8 - CSP: Social Golfers}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+\vspace{-5em}
+\section{Modellazione}
+
+
+\subsubsection*{variabili}
+\begin{itemize}
+    \item $X = \{ X_{p, w} \mid p \in \{1, \dots, P\} \land w \in \{1, \dots, W\} \}$ dove $X_{p, w}$ rappresenta il gruppo assegnato al giocatore $p$ nella settimana $w$
+\end{itemize}
+\subsubsection*{domini}
+\begin{itemize}
+    \item $D(X_{p, w}) = \{1, \dots G\}$ per ogni $X_{p, w}$
+\end{itemize}
+
+\subsubsection*{vincoli essenziali}
+    \begin{itemize}
+        \item \textbf{dimensione dei gruppi} ($C_{size}$): per ogni settimana e per ogni gruppo, il numero di giocatori assegnati deve essere esattamente $S$
+$$C_{size} = \{ (Y_w, R_{w,g}) \mid w \in \{1, \dots, W\}, g \in \{1, \dots, G\} \}$$
+
+\text{dove:}
+\begin{itemize}
+    \item $Y_w = [X_{p,w} \mid p \in \{1, \dots, P\} ]$: assegnamenti di una settimana $w$;
+    \item $R_{w,g} \equiv \left| \{ X \in Y_w \mid X = g \} \right| = S$: i giocatori che nella settimana $w$ sono stati assegnati al gruppo $g$ sono $S$;
+\end{itemize}
+
+\item \textbf{incontri unici} ($C_{social}$): ogni coppia di soci distinti gioca nello stesso gruppo al massimo una volta in tutto il torneo.
+$$C_{social} = \{ (Y_{p_1, p_2}, R_{p_1, p_2}) \mid p_1, p_2 \in \{1, \dots, P\}, p_1 < p_2 \}$$
+
+dove:
+\begin{itemize}
+    \item $Y_{p_1, p_2} = [ X_{p_1,w}, X_{p_2,w} \mid w \in \{1, \dots, W\} ]$: assegnamenti per la coppia di giocatori $p_1$ e $p_2$ in tutte le settimane;
+    \item $R_{p_1, p_2} \equiv \left| \{ w \in \{1, \dots, W\} \mid X_{p_1,w} = X_{p_2,w} \} \right| \le 1$: le settimane in cui $p_1$ e $p_2$ sono stati assegnati allo stesso gruppo sono al massimo $1$;
+\end{itemize}
+        
+    \end{itemize}
+
+    \subsubsection*{alcuni vincoli di symmetry-breaking}
+        
+    \begin{itemize}
+\item \textbf{fissaggio della prima settimana} ($C_{sb1}$): la composizione della settimana 1 è predeterminata
+$$
+        C_{sb1} = \left\{ \left( \{X_{p, 1}\}, X_{p, 1} = \left\lceil \frac{p}{S} \right\rceil \right) \;\middle|\; p \in \{1, \dots, P\} \right\}
+$$
+\begin{itemize}
+    \item i giocatori sono inseriti nei gruppi in ``ordine'' di ID (e.g. se $G=2, S=3$, $G1 = \{1, 2, 3\}$ e $G2 = \{4, 5, 6\}$)
+\end{itemize}
+
+\item \textbf{ordinamento dei gruppi} ($C_{sb2}$): nelle settimane successive alla prima, per evitare permutazioni dei gruppi (che sono interscambiabili), imponiamo che siano ordinati in base all'ID minimo tra i giocatori al loro interno (quindi che $min_{ID}(G1) < min_{ID}(G2)$)
+$$C_{sb2} = \{ (Y_w, R_{w,g}) \mid w \in \{2, \dots, W\}, g \in \{1, \dots, G-1\} \}$$
+
+
+\text{dove:}
+\begin{itemize}
+    \item $Y_w = [ X_{p,w} \mid p \in \{1, \dots, P\} ]$: assegnamenti nella settimana $w$;
+    \item $R_{w,g} \equiv \min \{ p \in \{1, \dots, P\} \mid X_{p,w} = g \} < \min \{ p \in \{1, \dots, P\} \mid X_{p,w} = g+1 \}$: l'ID del giocatore ``minimo'' (una sorta di capitano) nel gruppo $g$ deve essere strettamente minore dell'ID del giocatore ``minimo'' nel gruppo $g+1$;
+\end{itemize}
+    \end{itemize}
+
+\section{Istanziazione (P=4, W=2, G=2, S=2)}
+
+\subsubsection*{variabili}
+4 giocatori e 2 settimane; l'insieme delle variabili è composto da $P \times W = 8$ elementi:
+$$X = \{ X_{1,1}, X_{2,1}, X_{3,1}, X_{4,1}, X_{1,2}, X_{2,2}, X_{3,2}, X_{4,2} \}$$
+
+\subsubsection*{domini}
+Poiché i gruppi disponibili sono 2, il dominio di ciascuna variabile è:
+$$D(X_{p,w}) = \{1, 2\} \quad  p \in \{1, 2, 3, 4\},  w \in \{1, 2\}$$
+
+\subsubsection*{vincoli}
+
+\paragraph{dimensione dei gruppi ($C_{size}$):}
+per ogni settimana ($w \in \{1,2\}$) e ogni gruppo ($g \in \{1,2\}$), ci devono essere esattamente 2 giocatori:
+\begin{itemize}
+    \item settimana 1:
+    $$|\{ X \in \{X_{1,1}, X_{2,1}, X_{3,1}, X_{4,1}\} \mid X = 1 \}| = 2$$
+    $$|\{ X \in \{X_{1,1}, X_{2,1}, X_{3,1}, X_{4,1}\} \mid X = 2 \}| = 2$$
+    \item settimana 2:
+    $$|\{ X \in \{X_{1,2}, X_{2,2}, X_{3,2}, X_{4,2}\} \mid X = 1 \}| = 2$$
+    $$|\{ X \in \{X_{1,2}, X_{2,2}, X_{3,2}, X_{4,2}\} \mid X = 2 \}| = 2$$
+\end{itemize}
+
+\paragraph{incontri unici ($C_{social}$):}
+per ogni possibile coppia di giocatori (sei combinazioni in totale), il numero di settimane in cui condividono lo stesso gruppo deve essere $\le 1$:
+    $$|\{ w \in \{1, 2\} \mid X_{1,w} = X_{2,w} \}| \le 1$$
+    $$|\{ w \in \{1, 2\} \mid X_{1,w} = X_{3,w} \}| \le 1$$
+    $$|\{ w \in \{1, 2\} \mid X_{1,w} = X_{4,w} \}| \le 1$$
+    $$|\{ w \in \{1, 2\} \mid X_{2,w} = X_{3,w} \}| \le 1$$
+    $$|\{ w \in \{1, 2\} \mid X_{2,w} = X_{4,w} \}| \le 1$$
+    $$|\{ w \in \{1, 2\} \mid X_{3,w} = X_{4,w} \}| \le 1$$
+
+\paragraph{fissaggio della prima settimana ($C_{sb1}$):}
+i giocatori vengono pre-assegnati ai gruppi nella settimana $1$ in base al loro ID ($X_{p,1} = \lceil p/2 \rceil$):
+$$X_{1,1} = 1$$
+$$X_{2,1} = 1$$
+$$X_{3,1} = 2$$
+$$X_{4,1} = 2$$
+
+\paragraph{ordinamento dei gruppi ($C_{sb2}$):}
+applicato solo alla settimana $2$ per rompere le simmetrie tra i gruppi 1 e 2:
+$$\min \{ p \in \{1, 2, 3, 4\} \mid X_{p,2} = 1 \} < \min \{ p \in \{1, 2, 3, 4\} \mid X_{p,2} = 2 \}$$
+
+\section{Codifica in MiniZinc}
+
+si trova anche \href{https://github.com/AglaiaNorza/ia/blob/main/CSP/E.A.5.8/E.A.5.8.mzn}{qui}
+
+\begin{mznbox}{}
+include "globals.mzn";
+
+% --- parametri ---
+int: P;
+int: W;
+int: G;
+int: S = P div G;
+
+% X[p, w] rappresenta il gruppo assegnato al giocatore p nella settimana w
+array[1..P, 1..W] of var 1..G: X;
+
+
+% C_size:
+constraint forall(w in 1..W, g in 1..G) (
+    count(p in 1..P)(X[p, w] == g) == S
+);
+
+% C_social:
+constraint forall(p1, p2 in 1..P where p1 < p2) (
+    sum(w in 1..W) (bool2int(X[p1, w] == X[p2, w])) <= 1 
+    % ^sporco trucco da programmatori (sommatoria di booleani)
+);
+
+
+% C_sb1:
+constraint forall(p in 1..P) (
+    X[p, 1] = (p - 1) div S + 1
+);
+
+% C_sb2:
+constraint forall(w in 2..W, g in 1..G-1) (
+    min([p | p in 1..P where X[p, w] == g]) < 
+    min([p | p in 1..P where X[p, w] == g + 1])
+);
+
+
+solve satisfy;
+\end{mznbox}
+\end{document}
