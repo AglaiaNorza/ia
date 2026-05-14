@@ -1,0 +1,92 @@
+\documentclass[12pt]{article}
+\usepackage{amsmath}
+
+\usepackage{xcolor}
+
+\usepackage{listings}
+\usepackage[most]{tcolorbox}
+\usepackage[colorlinks, allcolors=blue]{hyperref}
+
+
+\title{E.B.1.3 - FOL: Aldo}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+\vspace{-5em}
+
+\begin{quote}
+``I cani da caccia abbaiano di notte. Chi possiede gatti non può avere topi in
+casa. Chi ha il sonno leggero non può possedere nessun animale che abbaia
+di notte. Aldo possiede un gatto oppure un cane da caccia.''
+\end{quote}
+
+
+$$
+\forall x CaneCaccia(x) \to AbbaiaDiNotte(x) \land
+$$
+
+$$
+\forall x \left(\exists y \large\bigl( Gatto(y) \land Possiede(x, y)\bigr)  \to \neg \exists z (Topo(z) \land InCasa(x, z)) \right) \land
+$$
+
+$$
+\forall x (SonnoLeggero(x) \to \forall y (Possiede (x, y) \to \neg AbbaiaDiNotte(y)) ) \land
+$$
+
+$$
+\exists x (Possiede(Aldo, x) \land (Gatto(x) \lor CaneCaccia(x))) 
+$$
+
+
+\paragraph{}
+Sto definendo solo la formula o una KB che sia coerente? Se sto definendo una KB, mi servono vincoli ``di dominio'' come:
+
+$$\forall x (Gatto(x) \to \neg CaneCaccia(x))$$
+$$\forall x (Gatto(x) \to \neg Topo(x))$$
+$$\forall x (CaneCaccia(x) \to \neg Topo(x))$$
+$$\forall x (Persona(x) \to \neg Animale(x))$$
+
+$$\forall x (Gatto(x) \to Animale(x))$$
+$$\forall x (CaneCaccia(x) \to Animale(x))$$
+$$\forall x (Topo(x) \to Animale(x))$$
+
+$$\forall x, y (Possiede(x, y) \to (Persona(x) \land Animale(y)))$$
+$$\forall x (SonnoLeggero(x) \to Persona(x))$$
+$$\forall x, z (InCasa(x, z) \to (Persona(x) \land Animale(z)))$$
+
+$$Persona(Aldo)$$
+
+\paragraph{}
+
+primo modello $M$ (t.c. $M \models \varphi$):
+\begin{align*}
+D^M &= \{ \text{aldo, micio} \} \\
+M(Aldo) &= \text{aldo} \\
+M(Gatto) &= \{ \text{micio} \} \\
+M(Possiede) &= \{ (\text{aldo, micio}) \} \\
+M(SonnoLeggero) &= \{ \text{aldo} \} \\
+M(CaneCaccia) &= \emptyset \\
+M(AbbaiaDiNotte) &= \emptyset \\
+M(Topo) &= \emptyset \\
+M(InCasa) &= \emptyset
+\end{align*}
+
+secondo modello $I$ (t.c. $I \not\models \varphi$):
+\begin{align*}
+D^I &= \{ \text{aldo, fido} \} \\
+I(Aldo) &= \text{aldo} \\
+I(CaneCaccia) &= \{ \text{fido} \} \\
+I(AbbaiaDiNotte) &= \{ \text{fido} \} \\
+I(Possiede) &= \{ (\text{aldo, fido}) \} \\
+I(SonnoLeggero) &= \{ \text{aldo} \} \\
+I(Gatto) &= \emptyset \\
+I(Topo) &= \emptyset \\
+I(InCasa) &= \emptyset
+\end{align*}
+
+(aldo ha un sonno leggero ma possiede un cane, fido, che abbaia di notte)
+
+
+\end{document}
