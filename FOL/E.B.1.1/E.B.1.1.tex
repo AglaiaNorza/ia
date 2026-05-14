@@ -1,0 +1,68 @@
+\documentclass[12pt]{article}
+\usepackage{amsmath}
+
+\usepackage{xcolor}
+
+\usepackage{listings}
+\usepackage[most]{tcolorbox}
+\usepackage[colorlinks, allcolors=blue]{hyperref}
+
+
+\title{E.B.1.1 - FOL: studenti ansiosi}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+\vspace{-5em}
+
+\begin{quote}
+``Nessuno studente supererà un qualunque esame se è ansioso o non ne studia il programma.''
+\end{quote}
+
+\begin{itemize}
+    \item si può interpretare un predicato $Studia(x, y)$ come vero se lo studente $x$ studia il programma dell'esame $y$ e scrivere una modellazione di questo tipo:
+\begin{align*}
+    \forall x \forall y (& \bigr(Studente(x) \land Esame(y) \land \\
+                       &(Ansioso(x) \lor \neg Studia(x, y))\bigr) \to \neg Supera(x, y) )
+\end{align*}
+
+    \item se si vuole invece modellare il programma come un'entità separata dall'esame, si può scrivere:
+\begin{align*}
+    \forall x \forall y \forall z (& \bigr(Studente(x) \land Esame(y) \land Programma(y, z)\\
+                                   &\land (Ansioso(x) \lor \neg Studia(x, z))\bigr) \to \neg Supera(x, y) )
+\end{align*}
+\item (nel caso sopra un esame può anche avere più di un programma (e.g. sezioni del corso), e basta non studiarne uno per non passare - se invece assumiamo che ogni esame abbia esattamente un programma possiamo modellare ``programma'' come simbolo di funzione)
+\end{itemize}
+
+Abbiamo quindi:
+$$\mathcal{P} = \{ Studente/1, Esame/1, Programma/2, Ansioso/1, Studia/2, Supera/2 \}$$
+
+(in cui i significati dei predicati sono quelli intuitivi)
+
+\begin{itemize}
+    \item un primo modello (t.c. $M_1 \models \phi$) è $M_1 = \langle D, I \rangle$, dove:
+\begin{itemize}
+    \item $D = \{ st, es, pr \}$
+    \item $I(Studente) = \{ st \}$
+    \item $I(Esame) = \{ es \}$
+    \item $I(Programma) = \{ (es, pr) \}$
+    \item $I(Ansioso) = \{ st \}$
+    \item $I(Studia) = \emptyset$ 
+    \item $I(Supera) = \emptyset$
+\end{itemize}
+
+\item un secondo modello (t.c. $M_1 \not\models \phi$) è $M_2 = \langle D, I \rangle$, dove:  
+
+\begin{itemize}
+    \item $D = \{ st, es, pr \}$
+\item $I(Studente) = \{ st \}$
+\item $I(Esame) = \{ es \}$
+\item $I(Programma) = \{ (es, pr) \}$
+\item $I(Ansioso) = \{ st \}$
+\item $I(Studia) = \{ (st, pr)  \}$
+\item $I(Supera) = \{ (st, es) \}$
+\end{itemize}
+
+\end{itemize}
+\end{document}
