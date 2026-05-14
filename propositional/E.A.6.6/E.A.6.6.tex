@@ -1,0 +1,276 @@
+\documentclass[10pt]{article}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{hyperref}
+\usepackage[svgnames]{xcolor} 
+\usepackage{listings}
+\usepackage[skins,listings,breakable]{tcolorbox}
+
+\definecolor{cppbg}{HTML}{F8F9FA}     
+\definecolor{boxtitlebg}{HTML}{2B2D31}
+\definecolor{cppblue}{HTML}{00599C}   
+\definecolor{cppgreen}{HTML}{138A07} 
+\definecolor{cppred}{HTML}{B11515}  
+\definecolor{cppnumber}{HTML}{888888} 
+
+\lstdefinestyle{cppstyle}{
+    language=C++,
+    commentstyle=\color{cppgreen}\itshape,
+    keywordstyle=\color{cppblue}\bfseries,
+    numberstyle=\tiny\color{cppnumber},
+stringstyle=\color{cppred},
+basicstyle=\ttfamily\footnotesize,
+breaklines=true,
+    showstringspaces=false,
+    tabsize=4,                    
+    numbers=none                     
+}
+
+\newtcblisting{cppbox}[1]{
+    enhanced,
+    skin=bicolor,
+    colback=cppbg,
+    colbacktitle=boxtitlebg,
+    coltitle=white,
+    colframe=boxtitlebg,
+    boxrule=0.5pt,
+    arc=4pt,
+    drop shadow=black!10!white,
+    fonttitle=\bfseries\sffamily,
+    title=#1,
+    listing only,
+    listing options={style=cppstyle, numbers=left, numbersep=10pt},
+    left=15pt,
+    top=4pt,
+    bottom=4pt,
+    breakable
+}
+
+
+
+\title{E.A.6.5 - Schur's lemma}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+\vspace{-6em}
+
+\section{Modellazione}
+
+Introduciamo le variabili
+\[
+x_{e,i}  \quad e \in E, i \in \{1, 2, 3\}
+\]
+$x_{e,i} = \top \iff $ l'arco $e$ è colorato con il colore $i$.
+
+\paragraph{}
+
+Sia $\mathcal{T}$ l'insieme di tutti i cicli di lunghezza 3 presenti nel grafo $G$. Un elemento di $\mathcal{T}$ è un set di tre archi $\{e_1, e_2, e_3\}$ che connettono tre vertici distinti (assumiamo no self-loops) $u, v, w \in V$:
+\[
+\mathcal{T} = \{ \{e_1, e_2, e_3\} \subseteq E \mid e_1=\{u,v\}, e_2=\{v,w\}, e_3=\{w,u\} \text{ con } u \neq v \neq w \}
+\]
+
+La formula $\Phi(G)$ è composta dalla congiunzione di:
+
+\begin{enumerate}
+    \item ogni arco deve avere almeno un colore
+    \[
+    \bigwedge_{e \in E} (x_{e,1} \lor x_{e,2} \lor x_{e,3})
+    \]
+    
+    \item per ogni triangolo e per ogni colore, tre archi di un triangolo non possono essere dello stesso colore
+    \[
+    \bigwedge_{\{e_1, e_2, e_3\} \in \mathcal{T}} \bigwedge_{i=1}^{3} (\neg x_{e_1,i} \lor \neg x_{e_2,i} \lor \neg x_{e_3,i})
+    \]
+\end{enumerate}
+
+Come per Schur's Lemma, non è necessario imporre che ogni arco abbia esattamente un colore. Se si assegnano più colori a un arco senza violare i vincoli sui triangoli, la soluzione è comunque valida (è sufficiente scegliere uno qualsiasi dei colori assegnati).
+
+\section{Istanziazione}
+
+\[
+\begin{aligned}
+E = \{ & \{G1, H\}, \{G1, E\}, \{H, E\}, \{H, I\}, \{H, A\}, \{I, A\}, \{I, B\}, \{A, E\}, \{A, S\}, \\
+& \{E, D\}, \{S, D\}, \{S, B\}, \{S, C\}, \{B, J\}, \{B, C\}, \{B, G2\}, \{J, G2\}, \{D, C\}, \{C, G2\} \}
+\end{aligned}
+\]
+
+\paragraph{}
+L'insieme dei triangoli $\mathcal{T}$ presenti nel grafo è composto dai seguenti 7 cicli di lunghezza 3:
+\[
+\begin{aligned}
+\mathcal{T} = \{ & \{\{G1, H\}, \{G1, E\}, \{H, E\}\}, \\
+& \{\{H, I\}, \{H, A\}, \{I, A\}\}, \\
+& \{\{H, E\}, \{H, A\}, \{A, E\}\}, \\
+& \{\{B, J\}, \{J, G2\}, \{B, G2\}\}, \\
+& \{\{B, C\}, \{C, G2\}, \{B, G2\}\}, \\
+& \{\{S, D\}, \{D, C\}, \{S, C\}\}, \\
+& \{\{S, B\}, \{B, C\}, \{S, C\}\} \}
+\end{aligned}
+\]
+
+\paragraph{}
+La formula proposizionale $\Phi(G_{1.1})$ in CNF è la congiunzione dei seguenti vincoli:
+
+\paragraph{vincoli di colorazione per archi}
+\begin{itemize}
+    \item $(x_{\{G1, H\},1} \lor x_{\{G1, H\},2} \lor x_{\{G1, H\},3})$
+    \item $(x_{\{G1, E\},1} \lor x_{\{G1, E\},2} \lor x_{\{G1, E\},3})$
+    \item $(x_{\{H, E\},1} \lor x_{\{H, E\},2} \lor x_{\{H, E\},3})$
+    \item $(x_{\{H, I\},1} \lor x_{\{H, I\},2} \lor x_{\{H, I\},3})$
+    \item $(x_{\{H, A\},1} \lor x_{\{H, A\},2} \lor x_{\{H, A\},3})$
+    \item $(x_{\{I, A\},1} \lor x_{\{I, A\},2} \lor x_{\{I, A\},3})$
+    \item $(x_{\{I, B\},1} \lor x_{\{I, B\},2} \lor x_{\{I, B\},3})$
+    \item $(x_{\{A, E\},1} \lor x_{\{A, E\},2} \lor x_{\{A, E\},3})$
+    \item $(x_{\{A, S\},1} \lor x_{\{A, S\},2} \lor x_{\{A, S\},3})$
+    \item $(x_{\{E, D\},1} \lor x_{\{E, D\},2} \lor x_{\{E, D\},3})$
+    \item $(x_{\{S, D\},1} \lor x_{\{S, D\},2} \lor x_{\{S, D\},3})$
+    \item $(x_{\{S, B\},1} \lor x_{\{S, B\},2} \lor x_{\{S, B\},3})$
+    \item $(x_{\{S, C\},1} \lor x_{\{S, C\},2} \lor x_{\{S, C\},3})$
+    \item $(x_{\{B, J\},1} \lor x_{\{B, J\},2} \lor x_{\{B, J\},3})$
+    \item $(x_{\{B, C\},1} \lor x_{\{B, C\},2} \lor x_{\{B, C\},3})$
+    \item $(x_{\{B, G2\},1} \lor x_{\{B, G2\},2} \lor x_{\{B, G2\},3})$
+    \item $(x_{\{J, G2\},1} \lor x_{\{J, G2\},2} \lor x_{\{J, G2\},3})$
+    \item $(x_{\{D, C\},1} \lor x_{\{D, C\},2} \lor x_{\{D, C\},3})$
+    \item $(x_{\{C, G2\},1} \lor x_{\{C, G2\},2} \lor x_{\{C, G2\},3})$
+\end{itemize}
+
+\paragraph{vincoli sui triangoli}
+
+\begin{itemize}
+    \item \textbf{triangolo $\{\{G1, H\}, \{G1, E\}, \{H, E\}\}$:}
+    \begin{itemize}
+        \item $(\neg x_{\{G1, H\},1} \lor \neg x_{\{G1, E\},1} \lor \neg x_{\{H, E\},1})$
+        \item $(\neg x_{\{G1, H\},2} \lor \neg x_{\{G1, E\},2} \lor \neg x_{\{H, E\},2})$
+        \item $(\neg x_{\{G1, H\},3} \lor \neg x_{\{G1, E\},3} \lor \neg x_{\{H, E\},3})$
+    \end{itemize}
+
+    \item \textbf{triangolo $\{\{H, I\}, \{H, A\}, \{I, A\}\}$:}
+    \begin{itemize}
+        \item $(\neg x_{\{H, I\},1} \lor \neg x_{\{H, A\},1} \lor \neg x_{\{I, A\},1})$
+        \item $(\neg x_{\{H, I\},2} \lor \neg x_{\{H, A\},2} \lor \neg x_{\{I, A\},2})$
+        \item $(\neg x_{\{H, I\},3} \lor \neg x_{\{H, A\},3} \lor \neg x_{\{I, A\},3})$
+    \end{itemize}
+
+    \item \textbf{triangolo $\{\{H, E\}, \{H, A\}, \{A, E\}\}$:}
+    \begin{itemize}
+        \item $(\neg x_{\{H, E\},1} \lor \neg x_{\{H, A\},1} \lor \neg x_{\{A, E\},1})$
+        \item $(\neg x_{\{H, E\},2} \lor \neg x_{\{H, A\},2} \lor \neg x_{\{A, E\},2})$
+        \item $(\neg x_{\{H, E\},3} \lor \neg x_{\{H, A\},3} \lor \neg x_{\{A, E\},3})$
+    \end{itemize}
+
+    \item \textbf{triangolo $\{\{B, J\}, \{J, G2\}, \{B, G2\}\}$:}
+    \begin{itemize}
+        \item $(\neg x_{\{B, J\},1} \lor \neg x_{\{J, G2\},1} \lor \neg x_{\{B, G2\},1})$
+        \item $(\neg x_{\{B, J\},2} \lor \neg x_{\{J, G2\},2} \lor \neg x_{\{B, G2\},2})$
+        \item $(\neg x_{\{B, J\},3} \lor \neg x_{\{J, G2\},3} \lor \neg x_{\{B, G2\},3})$
+    \end{itemize}
+
+    \item \textbf{triangolo $\{\{B, C\}, \{C, G2\}, \{B, G2\}\}$:}
+    \begin{itemize}
+        \item $(\neg x_{\{B, C\},1} \lor \neg x_{\{C, G2\},1} \lor \neg x_{\{B, G2\},1})$
+        \item $(\neg x_{\{B, C\},2} \lor \neg x_{\{C, G2\},2} \lor \neg x_{\{B, G2\},2})$
+        \item $(\neg x_{\{B, C\},3} \lor \neg x_{\{C, G2\},3} \lor \neg x_{\{B, G2\},3})$
+    \end{itemize}
+
+    \item \textbf{triangolo $\{\{S, D\}, \{D, C\}, \{S, C\}\}$:}
+    \begin{itemize}
+        \item $(\neg x_{\{S, D\},1} \lor \neg x_{\{D, C\},1} \lor \neg x_{\{S, C\},1})$
+        \item $(\neg x_{\{S, D\},2} \lor \neg x_{\{D, C\},2} \lor \neg x_{\{S, C\},2})$
+        \item $(\neg x_{\{S, D\},3} \lor \neg x_{\{D, C\},3} \lor \neg x_{\{S, C\},3})$
+    \end{itemize}
+
+    \item \textbf{triangolo $\{\{S, B\}, \{B, C\}, \{S, C\}\}$:}
+    \begin{itemize}
+        \item $(\neg x_{\{S, B\},1} \lor \neg x_{\{B, C\},1} \lor \neg x_{\{S, C\},1})$
+        \item $(\neg x_{\{S, B\},2} \lor \neg x_{\{B, C\},2} \lor \neg x_{\{S, C\},2})$
+        \item $(\neg x_{\{S, B\},3} \lor \neg x_{\{B, C\},3} \lor \neg x_{\{S, C\},3})$
+    \end{itemize}
+\end{itemize}
+
+
+\section{Codec}
+
+\begin{cppbox}{}
+#include "Encoder.hpp"
+#include "Problem.hpp"
+#include <string>
+#include <vector>
+
+class EdgeColoring : public Problem {
+private:
+    struct Triangle {
+        int e1, e2, e3;
+    };
+
+    int numVertices;
+    int numEdges;
+    std::vector<std::pair<int, int>> edges;
+    std::vector<Triangle> triangles;
+
+    inline std::string vName(int e, int i) const {
+        return "x_" + std::to_string(e) + "_" + std::to_string(i);
+    }
+
+public:
+    // il costruttore riceve i nodi e la lista degli archi, e precalcola i triangoli
+    EdgeColoring(int V, const std::vector<std::pair<int, int>>& E) 
+        : numVertices(V), numEdges(E.size()), edges(E) {
+        
+        // matrice di adiacenza che mappa (u, v) all'indice dell'arco
+        std::vector<std::vector<int>> adj(V, std::vector<int>(V, -1));
+        for (int i = 0; i < numEdges; ++i) {
+            int u = edges[i].first;
+            int v = edges[i].second;
+            adj[u][v] = i;
+            adj[v][u] = i; // grafo non orientato
+        }
+
+        // troviamo tutti i triangolo
+        for (int i = 0; i < V; ++i) {
+            for (int j = i + 1; j < V; ++j) {
+                if (adj[i][j] != -1) {
+                    for (int k = j + 1; k < V; ++k) {
+                        if (adj[i][k] != -1 && adj[j][k] != -1) {
+                            triangles.push_back({adj[i][j], adj[j][k], adj[i][k]});
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    void generateConstraints(Encoder& encoder, EncodingContext& ctx, 
+                             int tId, int tCount) override {
+        
+        // ogni arco deve avere almeno un colore (1, 2 o 3)
+        for (int e = tId; e < numEdges; e += tCount) {
+            std::vector<int> edgeLits;
+            for (int i = 1; i <= 3; ++i) {
+                edgeLits.push_back(encoder.getVar(vName(e, i)));
+            }
+            encoder.writeDirectClause(edgeLits, ctx);
+        }
+
+        // per ogni triangolo e per ogni colore, 
+        // tre archi non possono essere dello stesso colore
+        // Partizionato per indice del triangolo
+        for (int t = tId; t < triangles.size(); t += tCount) {
+            int e1 = triangles[t].e1;
+            int e2 = triangles[t].e2;
+            int e3 = triangles[t].e3;
+
+            for (int i = 1; i <= 3; ++i) {
+                int lit1 = -encoder.getVar(vName(e1, i));
+                int lit2 = -encoder.getVar(vName(e2, i));
+                int lit3 = -encoder.getVar(vName(e3, i));
+                
+                encoder.writeDirectClause({lit1, lit2, lit3}, ctx);
+            }
+        }
+    }
+};
+\end{cppbox}
+
+\end{document}
