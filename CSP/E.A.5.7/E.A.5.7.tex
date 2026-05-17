@@ -163,27 +163,27 @@ $$(Cards, N, M, D) = (\{1, 1, 2, 2, 3, 3, 4\}, 7, 4, 4)$$
 
 \begin{mznbox}{}
 include "globals.mzn"; % per global_cardinality
+ 
+int: M;
+int: N;
+int: D;
+array[1..N] of int: C;
 
-int: m;
-int: n;
-int: d;
-array[1..n] of int: c;
+array[1..N] of var 1..M: X;
 
-array[1..n] of var 1..m: x;
+var 2..N-1-D: P1; % primo picco
+var 3..N-2: P2; % minimo locale 
+var 4..N-1: P3; % secondo picco
 
-var 2..n-1-d: p1; % primo picco
-var 3..n-2: p2; % minimo locale 
-var 4..n-1: p3; % secondo picco
-
-array[1..m] of int: counts = [count(c, v) | v in 1..m];
-constraint global_cardinality(x, [v | v in 1..m], counts);
+array[1..M] of int: counts = [count(C, v) | v in 1..M];
+constraint global_cardinality(X, [v | v in 1..M], counts);
 
 % alternativamente:
-% constraint sorted(c) == sorted (x);
+% constraint sort(C) == sort(X);
 
-constraint p1 < p2;
-constraint p2 < p3;
-constraint p3 = p1 + d;
+constraint P1 < P2;
+constraint P2 < P3;
+constraint P3 = P1 + D;
 
 constraint forall(i in 1..N-1) (
     (i < P1) -> (X[i] < X[i+1])
