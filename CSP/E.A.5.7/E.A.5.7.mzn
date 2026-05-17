@@ -21,9 +21,25 @@ constraint P1 < P2;
 constraint P2 < P3;
 constraint P3 = P1 + D;
 
-constraint forall(i in 1..P1-1) (X[i] < X[i+1]);
-constraint forall(i in P1..P2-1) (X[i] > X[i+1]);
-constraint forall(i in P2..P3-1) (X[i] < X[i+1]);
-constraint forall(i in P3..N-1) (X[i] > X[i+1]);
+constraint forall(i in 1..N-1) (
+    (i < P1) -> (X[i] < X[i+1])
+);
+
+constraint forall(i in 1..N-1) (
+    (i >= P1 /\ i < P2) -> (X[i] > X[i+1])
+);
+
+constraint forall(i in 1..N-1) (
+    (i >= P2 /\ i < P3) -> (X[i] < X[i+1])
+);
+
+constraint forall(i in 1..N-1) (
+    (i >= P3) -> (X[i] > X[i+1])
+);
+
+% constraint forall(i in 1..P1-1) (X[i] < X[i+1]);
+% constraint forall(i in P1..P2-1) (X[i] > X[i+1]);
+% constraint forall(i in P2..P3-1) (X[i] < X[i+1]);
+% constraint forall(i in P3..N-1) (X[i] > X[i+1]);
 
 solve satisfy;
